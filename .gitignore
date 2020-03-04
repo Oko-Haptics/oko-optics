@@ -105,3 +105,11 @@ venv.bak/
 
 # Images
 *.jpg
+
+# Calibration Files
+calibration/
+calibration_images/
+ 
+# Pycharm Metadata
+.idea/
+

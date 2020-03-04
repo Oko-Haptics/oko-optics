@@ -1,65 +1,41 @@
 import cv2
 import os
-from stereovision.calibration import StereoCalibrator
-from stereovision.calibration import StereoCalibration
-from stereovision.exceptions import ChessboardNotFoundError
+
+from stereopy_calibrate import RectifyCalibrator
+from stereopy_calibrate import DisparityCalibrator
 
 
-class ChessBoard:
-    rows = 6
-    columns = 9
-    square = 2.34
+def show_image(cb, image_name='chessboard'):
+    cv2.imshow(image_name, cb.draw_chessboard())
+    if cv2.waitKey(0):
+        cv2.destroyAllWindows()
 
 
-def get_cal_dir():
-    return os.path.join(os.getcwd(), 'calibration_images')
+if __name__ == '__main__':
+    print("Calibrating Image Rectification")
+    _target = os.path.join(os.getcwd(), 'calibration_images')
+    _rows = 7
+    _cols = 10
+    _edge = 2.54  # cm
+    _left = []
+    _right = []
+    [_left.append(os.path.join(_target, t)) if 'left' in t else _right.append(os.path.join(_target, t))
+     for t in os.listdir(_target)]
+    print(len(_left))
+    print(len(_right))
+    c = RectifyCalibrator(row=_rows, col=_cols, edge=_edge, left_imgs=_left, right_imgs=_right,
+                          show_results=False)
+    c.find_corners()
+    print("Calibrating this may take several minutes")
+    cal = c.calibrate()
+    print("Exporting")
+    cal.export(output_folder=os.path.join(os.getcwd(), 'calibration'))
+    print("Finished Exporting Rectification Calibration")
 
+    print("Calibrating Depth Maps")
+    cd = DisparityCalibrator(_path_left=os.path.join(os.getcwd(), 'calibration_images/left_2.png'),
+                             _path_right=os.path.join(os.getcwd(), 'calibration_images/right_2.png'))
 
-def num_images():
-    return len(os.listdir(get_cal_dir()))/2
-
-
-test_image = os.path.join(os.getcwd(), 'test.png')
-width, height, _ = cv2.imread(test_image).shape
-calibrator = StereoCalibrator(ChessBoard.rows, ChessBoard.columns, ChessBoard.square, (width, height))
-_count = 0
-total_photos = num_images()
-cal_dir = get_cal_dir()
-while _count != total_photos:
-    _count += 1
-    print(f"attempting to analyze calibration images: {_count}")
-    _left = os.path.join(cal_dir, f"left_{_count}.png")
-    _right = os.path.join(cal_dir, f"right_{_count}.png")
-    try:
-        if not(os.path.isfile(_left) and os.path.isfile(_right)):
-            raise RuntimeError("Missing Image Pair:", _count)
-        left_img = cv2.imread(_left)
-        right_img = cv2.imread(_right)
-        calibrator._get_corners(left_img)
-        calibrator._get_corners(right_img)
-        calibrator.add_corners((left_img, right_img), show_results=True)
-    except ChessboardNotFoundError as e:
-        print(f"error in finding chessboard in pair {_count}: {e}")
-        print("skipping this pair of images")
-    except RuntimeError as e:
-        print(e)
-        break
-    print(f"finished analysis of {_count}")
-
-print("Calibration instance defined!")
-
-print('Starting calibration... It can take several minutes!')
-calibration = calibrator.calibrate_cameras()
-calibration.export('calib_result')
-print('Calibration complete!')
-
-
-# Lets rectify and show last pair after  calibration
-calibration = StereoCalibration(input_folder='calib_result')
-rectified_pair = calibration.rectify((left_img, right_img))
-
-cv2.imshow('Left CALIBRATED', rectified_pair[0])
-cv2.imshow('Right CALIBRATED', rectified_pair[1])
-cv2.imwrite("rectifyed_left.jpg",rectified_pair[0])
-cv2.imwrite("rectifyed_right.jpg",rectified_pair[1])
-cv2.waitKey(0)
+    dm = cd.calibrate()
+    dm.export(output_folder=os.path.join(os.getcwd(), 'calibration'))
+    print("Finished Exporting Depth Map Calibration")
