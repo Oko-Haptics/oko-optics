@@ -103,8 +103,11 @@ class PostProcess:
     @staticmethod
     def depth_map(_disparity):
         disparity_fixtype = cv2.convertScaleAbs(_disparity, alpha=(255.0 / 65535.0))
-        disparity_color = cv2.applyColorMap(disparity_fixtype, cv2.COLORMAP_JET)
-        return disparity_color
+        return disparity_fixtype
+
+    @staticmethod
+    def depth_map2color(_fixtype):
+        return cv2.applyColorMap(_fixtype, cv2.COLORMAP_JET)
 
     def __init__(self):
         self._rows = 2
@@ -149,7 +152,7 @@ if __name__ == '__main__':
         depth_map_ = dask.delayed(processor.depth_map)(disparity_)
         vibrations = processor.depth_intensity(depth_map_.compute(), floor_zone.compute())
         haptic_output = dask.compute(*vibrations)
-        cv2.imshow('depth', depth_map_.compute())
+        cv2.imshow('depth', processor.depth_map2color(depth_map_.compute()))
         cv2.imshow('floor', floor_zone.compute())
         cv2.imshow('raw', left_)
         if cv2.waitKey(20) == 27:

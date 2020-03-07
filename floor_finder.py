@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
         floor_zone = floor_finder.find(_src=cap, _shape=cap.shape[:-1])
 
-        cv2.imshow('result', floor_zone)
+        cv2.imshow('result', np.invert(floor_zone))
         if cv2.waitKey(20) == 27:
             break
     left.release()

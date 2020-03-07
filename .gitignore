@@ -106,6 +106,9 @@ venv.bak/
 # Images
 *.jpg
 
+# Videos
+*.mp4
+
 # Calibration Files
 calibration/
 calibration_images/

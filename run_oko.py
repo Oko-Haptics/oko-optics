@@ -1,11 +1,13 @@
 import cv2
+from arduino_talker import ArduinoTalker
 from depth_map import Camera, PostProcess
-from wall_detect import FindWall
 from floor_finder import FloorFinder
+from wall_detect import FindWall
 
 
 if __name__ == '__main__':
     c = 0
+    arduino_service = ArduinoTalker()
     processor = PostProcess()
     left = Camera.initialize(Camera.left)
     right = Camera.initialize(Camera.right)
@@ -27,10 +29,11 @@ if __name__ == '__main__':
         disparity = processor.get_disparity(_left_rectified=left_rectified, _right_rectified=right_rectified)
         depth_map = processor.depth_map(disparity)
         vibrations = processor.depth_intensity(depth_map, depth_map)
+        haptic_drive = arduino_service.encode(vibrations)
         cv2.imshow("left", left_)
         cv2.imshow("right", right_)
-        cv2.imshow('depth', depth_map)
-        if cv2.waitKey(190) == 27:
+        cv2.imshow('depth', processor.depth_map2color(depth_map))
+        if cv2.waitKey(20) == 27:
             break
         c = (c+1) % 2
     cv2.destroyAllWindows()
