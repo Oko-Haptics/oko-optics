@@ -28,7 +28,7 @@ if __name__ == '__main__':
             wall_warning = FindWall.find(right_)
         disparity = processor.get_disparity(_left_rectified=left_rectified, _right_rectified=right_rectified)
         depth_map = processor.depth_map(disparity)
-        vibrations = processor.depth_intensity(depth_map, depth_map)
+        vibrations = processor.depth_intensity(depth_map, floor_zone)
         haptic_drive = arduino_service.encode(vibrations)
         cv2.imshow("left", left_)
         cv2.imshow("right", right_)
