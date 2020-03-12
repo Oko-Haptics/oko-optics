@@ -16,7 +16,7 @@ if __name__ == '__main__':
     left_ = Camera.capture(left)
     left_rectified = processor.image_rectifier(left_, 'left')
     _hgt, _len, _ = right_.shape
-
+    floor_zone = []
     while True:
         if c == 0:
             left_ = Camera.capture(left)
